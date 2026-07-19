@@ -1,0 +1,5 @@
+streamlit==1.59.2
+streamlit-option-menu==0.4.0
+scikit-learn==1.6.1
+numpy==2.0.2
+joblib==1.5.3
