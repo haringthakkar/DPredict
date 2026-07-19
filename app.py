@@ -20,11 +20,11 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 # --- Load Models and Scalers ---
 @st.cache_resource
 def load_assets():
-    diabetes_model = joblib.load('diabetes_model.sav')
-    heart_model = joblib.load('heart_disease_model.sav')
-    heart_scaler = joblib.load('heart_disease_scaler.sav')
-    parkinsons_model = joblib.load('parkinsons_model.sav')
-    parkinsons_scaler = joblib.load('parkinsons_scaler.sav')
+    diabetes_model = joblib.load('models/diabetes_model.sav')
+    heart_model = joblib.load('models/heart_disease_model.sav')
+    heart_scaler = joblib.load('models/heart_disease_scaler.sav')
+    parkinsons_model = joblib.load('models/parkinsons_model.sav')
+    parkinsons_scaler = joblib.load('models/parkinsons_scaler.sav')
     return diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler
 
 diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler = load_assets()
