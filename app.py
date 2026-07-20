@@ -7,15 +7,51 @@ import time
 # --- Page Config ---
 st.set_page_config(page_title="Disease Prediction System", page_icon="🏥", layout="wide")
 
-# --- Custom CSS ---
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+# --- Initialize Menu State Tracking ---
+if "show_sidebar" not in st.session_state:
+    st.session_state.show_sidebar = True
+if "selected_page" not in st.session_state:
+    st.session_state.selected_page = "Diabetes"
+
+# --- Custom Global UI CSS Styling ---
+# Hides standard header decorations and completely clears input field instruction text
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    [data-testid="InputInstructions"] {
+        display: none !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- Dynamic Sidebar Structural Collapse CSS ---
+if not st.session_state.show_sidebar:
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] {display: none !important;}
+        [data-testid="collapsedControl"] {display: none !important;}
+        </style>
+        """, 
+        unsafe_allow_html=True
+    )
+
+# --- Persistent Main Screen Navigation Controller Button ---
+col_toggle, _ = st.columns([1, 5])
+with col_toggle:
+    if st.session_state.show_sidebar:
+        if st.button("⬅️ Hide Menu", use_container_width=True):
+            st.session_state.show_sidebar = False
+            st.rerun()
+    else:
+        if st.button("➡️ Show Menu", use_container_width=True):
+            st.session_state.show_sidebar = True
+            st.rerun()
 
 # --- Load Models and Scalers ---
 @st.cache_resource
@@ -29,22 +65,33 @@ def load_assets():
 
 diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler = load_assets()
 
-# --- Sidebar Navigation ---
-with st.sidebar:
-    st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
-    st.markdown("---")
-    page = option_menu(
-        menu_title=None,
-        options=["Diabetes", "Heart Disease", "Parkinson's"],
-        icons=["activity", "heart-pulse", "person-lines-fill"],
-        default_index=0,
-        styles={
-            "container": {"padding": "0!important", "background-color": "transparent"},
-            "icon": {"color": "gray", "font-size": "18px"}, 
-            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-            "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
-        }
-    )
+# --- Sidebar Navigation Framework ---
+if st.session_state.show_sidebar:
+    with st.sidebar:
+        st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
+        st.markdown("---")
+        
+        # Track the active string list position to map back perfectly when showing/hiding
+        menu_options = ["Diabetes", "Heart Disease", "Parkinson's"]
+        current_index = menu_options.index(st.session_state.selected_page)
+        
+        page_selection = option_menu(
+            menu_title=None,
+            options=menu_options,
+            icons=["activity", "heart-pulse", "person-lines-fill"],
+            default_index=current_index,
+            styles={
+                "container": {"padding": "0!important", "background-color": "transparent"},
+                "icon": {"color": "gray", "font-size": "18px"}, 
+                "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
+                "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
+            }
+        )
+        # Update session memory values interactively when user clicks a fresh module tab
+        st.session_state.selected_page = page_selection
+
+# Set global page router string to execute structural screens
+page = st.session_state.selected_page
 
 # ==========================================
 # 1. DIABETES PREDICTION
@@ -63,8 +110,8 @@ if page == "Diabetes":
         glucose = st.number_input("Glucose Level (mg/dL)", min_value=40, max_value=300, step=1, value=120)
         bp = st.number_input("Blood Pressure (Diastolic)", min_value=20, max_value=140, step=1, value=70)
     with col2:
-        skin = st.number_input("Skin Thickness (mm)", min_value=5, max_value=100, step=1, value=20)
-        insulin = st.number_input("Insulin Level (IU/mL)", min_value=14, max_value=900, step=1, value=79)
+        skin = st.number_input("Skin Thickness (mm)", min_value=5, max_value=100, step=1, value=15)
+        insulin = st.number_input("Insulin Level (IU/mL)", min_value=14, max_value=900, step=1, value=125)
         bmi = st.number_input("BMI", min_value=10.0, max_value=70.0, step=0.1, value=25.0)
     with col3:
         dpf = st.number_input("Diabetes Pedigree Function", min_value=0.0, max_value=3.0, step=0.01, value=0.5)
@@ -99,7 +146,7 @@ elif page == "Heart Disease":
     with col1:
         age = st.number_input("Age", min_value=1, max_value=120, step=1, value=50)
         sex = st.selectbox("Sex", options=[0, 1], format_func=lambda x: "Male" if x == 1 else "Female")
-        cp = st.selectbox("Chest Pain Type", options=[0, 1, 2, 3], help="0: Typical Angina, 1: Atypical Angina, 2: Non-anginal, 3: Asymptomatic")
+        cp = st.selectbox("Chest Pain Type", options=[0, 1, 2, 3], help="0:Asymptomatic, 1: Typical Angina, 2: Atypical Angina, 3: Non-anginal,")
         trestbps = st.number_input("Resting Blood Pressure (mmHg)", min_value=80, max_value=200, step=1, value=120)
         chol = st.number_input("Serum Cholestoral (mg/dl)", min_value=100, max_value=600, step=1, value=200)
     with col2:
@@ -111,7 +158,7 @@ elif page == "Heart Disease":
         oldpeak = st.number_input("ST Depression", min_value=0.0, max_value=10.0, step=0.1, value=1.0)
         slope = st.selectbox("Slope of Peak Exercise ST Segment", options=[0, 1, 2])
         ca = st.selectbox("Major Vessels Colored by Fluoroscopy", options=[0, 1, 2, 3, 4])
-        thal = st.selectbox("Thal", options=[0, 1, 2, 3], help="1: Normal, 2: Fixed Defect, 3: Reversible Defect")
+        thal = st.selectbox("Thal", options=[1, 2, 3], help="1: Normal, 2: Fixed Defect, 3: Reversible Defect")
 
     st.markdown("---")
     _, center_col, _ = st.columns([1, 2, 1])
@@ -126,7 +173,7 @@ elif page == "Heart Disease":
             if prediction[0] == 1:
                 st.error("⚠️ **High Risk Detected:** The model indicates a high probability of heart disease.")
             else:
-                st.success("✅ **Low Risk Detected:** The patient's vitals are currently within healthy parameters.")
+                st.success("✅ **Less Risk:** The patient's vitals are currently within healthy parameters.")
 
 # ==========================================
 # 3. PARKINSON'S PREDICTION
