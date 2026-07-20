@@ -3,21 +3,34 @@ import numpy as np
 import joblib
 import time
 
-# 1. First Streamlit execution command
+# 1. Page Configuration (Forces the sidebar to load in an expanded state immediately)
 st.set_page_config(
     page_title="Disease Prediction System", 
     page_icon="🏥", 
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# 2. Native, bulletproof CSS - Only touches background noise, leaving layout containers fully alone
+# 2. LOCKED SIDEBAR CSS: Removes the native close buttons and prevents the menu from being hidden
 st.markdown(
     """
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    [data-testid="InputInstructions"] {display: none !important;}
+    /* Hides the default top-left menu toggle controls entirely */
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    /* Removes the native '<<' collapse arrow button inside the sidebar */
+    button[title="Collapse sidebar"] {
+        display: none !important;
+    }
+    /* Removes the hover close buttons on modern Streamlit layouts */
+    .stSidebarCollapseButton {
+        display: none !important;
+    }
+    /* Global layout cleanup: removes the 'Press Enter to apply' tooltip prompt */
+    [data-testid="InputInstructions"] {
+        display: none !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -35,17 +48,15 @@ def load_assets():
 
 diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler = load_assets()
 
-# --- Native Sidebar Navigation ---
-# Using standard radio layout elements. Ad-blockers cannot trace or intercept this.
+# --- Native Sidebar Only (Locked & Permanent) ---
 with st.sidebar:
-    st.markdown("<h2 style='text-align: center; margin-bottom: 20px;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
     st.markdown("---")
     
     page = st.radio(
         label="Select Diagnostic Module",
         options=["Diabetes", "Heart Disease", "Parkinson's"],
-        index=0,
-        label_visibility="collapsed" # Keeps it looking clean like a custom menu
+        index=0
     )
 
 # ==========================================
