@@ -4,7 +4,7 @@ import numpy as np
 import joblib
 import time
 
-# 1. CRITICAL: This MUST be the absolute first Streamlit command executed!
+# 1. This must be the first Streamlit command executed
 st.set_page_config(
     page_title="Disease Prediction System", 
     page_icon="🏥", 
@@ -12,17 +12,16 @@ st.set_page_config(
     initial_sidebar_state=st.session_state.get("sidebar_state", "expanded")
 )
 
-# 2. Initialize session state tracking parameters below page config
+# 2. Safely initialize session states below page config
 if "sidebar_state" not in st.session_state:
     st.session_state.sidebar_state = "expanded"
 if "selected_page" not in st.session_state:
     st.session_state.selected_page = "Diabetes"
 
-# 3. FIX FOR NAMEERROR: Set the global page variable upfront using your session memory
-# This ensures line 85 always has a valid string value even when the sidebar is completely hidden!
+# 3. Global page variable initialization to avoid NameErrors when sidebar is hidden
 page = st.session_state.selected_page
 
-# 4. Custom Global UI CSS Styling (Hides header, footer, and removes input instructions)
+# 4. Custom UI CSS Styling (Hides header, footer, entries and default toggle arrow)
 st.markdown(
     """
     <style>
@@ -36,8 +35,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 5. Single-line Layout Toggle Button
-col_toggle, _ = st.columns()  # Gives the button plenty of room to stay on 1 line
+# 5. FIXED TOGGLE BUTTON LAYOUT (Explicit ratio structure prevents TypeErrors)
+col_toggle, col_spacer = st.columns([1, 4])  
 with col_toggle:
     if st.session_state.sidebar_state == "expanded":
         if st.button("⬅️ Hide Menu", use_container_width=True):
@@ -61,7 +60,6 @@ def load_assets():
 diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler = load_assets()
 
 # --- Sidebar Navigation Framework ---
-# This block only renders when sidebar_state is set to "expanded"
 if st.session_state.sidebar_state == "expanded":
     with st.sidebar:
         st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
@@ -83,7 +81,6 @@ if st.session_state.sidebar_state == "expanded":
             }
         )
         st.session_state.selected_page = page_selection
-        # Update our global page router variable with the active selection
         page = st.session_state.selected_page
 
 # ==========================================
