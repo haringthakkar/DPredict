@@ -14,7 +14,8 @@ if "selected_page" not in st.session_state:
     st.session_state.selected_page = "Diabetes"
 
 # --- Custom Global UI CSS Styling ---
-# Hides standard header decorations and completely clears input field instruction text
+# 1. Hides standard header decorations, clears entry prompts.
+# 2. CRITICAL: Deletes Streamlit's native '<<' arrow button so frontend states don't break.
 st.markdown(
     """
     <style>
@@ -24,32 +25,37 @@ st.markdown(
     [data-testid="InputInstructions"] {
         display: none !important;
     }
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- Dynamic Sidebar Structural Collapse CSS ---
+# --- Dynamic Sidebar Visibility Override ---
 if not st.session_state.show_sidebar:
     st.markdown(
         """
         <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        [data-testid="collapsedControl"] {display: none !important;}
+        [data-testid="stSidebar"] {
+            display: none !important;
+        }
         </style>
         """, 
         unsafe_allow_html=True
     )
 
-# --- Persistent Main Screen Navigation Controller Button ---
-col_toggle, _ = st.columns([1, 5])
+# --- Persistent Navigation Control Button Layout ---
+# Allocating a specific layout weight keeps your toggle text sitting cleanly on a single line
+col_toggle, col_spacer = st.columns([1, 4])
 with col_toggle:
     if st.session_state.show_sidebar:
-        if st.button("⬅️ Hide Menu", use_container_width=True):
+        if st.button("⬅️ Hide Sidebar", use_container_width=True):
             st.session_state.show_sidebar = False
             st.rerun()
     else:
-        if st.button("➡️ Show Menu", use_container_width=True):
+        if st.button("➡️ Show Sidebar", use_container_width=True):
             st.session_state.show_sidebar = True
             st.rerun()
 
@@ -71,7 +77,6 @@ if st.session_state.show_sidebar:
         st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
         st.markdown("---")
         
-        # Track the active string list position to map back perfectly when showing/hiding
         menu_options = ["Diabetes", "Heart Disease", "Parkinson's"]
         current_index = menu_options.index(st.session_state.selected_page)
         
@@ -87,10 +92,8 @@ if st.session_state.show_sidebar:
                 "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
             }
         )
-        # Update session memory values interactively when user clicks a fresh module tab
         st.session_state.selected_page = page_selection
 
-# Set global page router string to execute structural screens
 page = st.session_state.selected_page
 
 # ==========================================
