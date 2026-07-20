@@ -55,7 +55,7 @@ with st.sidebar:
     
     page = st.radio(
         label="Select Diagnostic Module",
-        options=["Diabetes", "Heart Disease", "Parkinson's"],
+        options=["Diabetes", "Heart Disease", "Parkinson's Disease"],
         index=0
     )
 
