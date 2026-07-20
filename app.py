@@ -4,24 +4,20 @@ import numpy as np
 import joblib
 import time
 
-# 1. This must be the first Streamlit command executed
+# 1. Clean, static page configuration layer
 st.set_page_config(
     page_title="Disease Prediction System", 
     page_icon="🏥", 
-    layout="wide",
-    initial_sidebar_state=st.session_state.get("sidebar_state", "expanded")
+    layout="wide"
 )
 
-# 2. Safely initialize session states below page config
-if "sidebar_state" not in st.session_state:
-    st.session_state.sidebar_state = "expanded"
+# 2. Safely initialize your page selection tracker
 if "selected_page" not in st.session_state:
     st.session_state.selected_page = "Diabetes"
 
-# 3. Global page variable initialization to avoid NameErrors when sidebar is hidden
 page = st.session_state.selected_page
 
-# 4. Custom UI CSS Styling (Hides header, footer, entries and default toggle arrow)
+# 3. Custom UI CSS Styling (Hides header, footer, entries and default toggle arrow)
 st.markdown(
     """
     <style>
@@ -29,23 +25,10 @@ st.markdown(
     footer {visibility: hidden;}
     header {visibility: hidden;}
     [data-testid="InputInstructions"] {display: none !important;}
-    [data-testid="collapsedControl"] {display: none !important;}
     </style>
     """,
     unsafe_allow_html=True
 )
-
-# 5. FIXED TOGGLE BUTTON LAYOUT (Explicit ratio structure prevents TypeErrors)
-col_toggle, col_spacer = st.columns([1, 4])  
-with col_toggle:
-    if st.session_state.sidebar_state == "expanded":
-        if st.button("⬅️ Hide Menu", use_container_width=True):
-            st.session_state.sidebar_state = "collapsed"
-            st.rerun()
-    else:
-        if st.button("➡️ Show Menu", use_container_width=True):
-            st.session_state.sidebar_state = "expanded"
-            st.rerun()
 
 # --- Load Models and Scalers ---
 @st.cache_resource
@@ -60,28 +43,28 @@ def load_assets():
 diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler = load_assets()
 
 # --- Sidebar Navigation Framework ---
-if st.session_state.sidebar_state == "expanded":
-    with st.sidebar:
-        st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
-        st.markdown("---")
-        
-        menu_options = ["Diabetes", "Heart Disease", "Parkinson's"]
-        current_index = menu_options.index(st.session_state.selected_page)
-        
-        page_selection = option_menu(
-            menu_title=None,
-            options=menu_options,
-            icons=["activity", "heart-pulse", "person-lines-fill"],
-            default_index=current_index,
-            styles={
-                "container": {"padding": "0!important", "background-color": "transparent"},
-                "icon": {"color": "gray", "font-size": "18px"}, 
-                "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-                "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
-            }
-        )
-        st.session_state.selected_page = page_selection
-        page = st.session_state.selected_page
+with st.sidebar:
+    st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    menu_options = ["Diabetes", "Heart Disease", "Parkinson's"]
+    current_index = menu_options.index(st.session_state.selected_page)
+    
+    page_selection = option_menu(
+        menu_title=None,
+        options=menu_options,
+        icons=["activity", "heart-pulse", "person-lines-fill"],
+        default_index=current_index,
+        styles={
+            "container": {"padding": "0!important", "background-color": "transparent"},
+            "icon": {"color": "gray", "font-size": "18px"}, 
+            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
+            "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
+        }
+    )
+    st.session_state.selected_page = page_selection
+
+page = st.session_state.selected_page
 
 # ==========================================
 # 1. DIABETES PREDICTION
