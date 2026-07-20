@@ -144,7 +144,7 @@ elif page == "Heart Disease":
 # ==========================================
 # 3. PARKINSON'S PREDICTION
 # ==========================================
-elif page == "Parkinson's":
+elif page == "Parkinson's Disease":
     st.title("👤 Parkinson's Disease Assessment")
     st.markdown("Enter biomedical voice measurements below to evaluate the likelihood of Parkinson's Disease.")
     
