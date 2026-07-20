@@ -4,59 +4,45 @@ import numpy as np
 import joblib
 import time
 
-# --- Page Config ---
-st.set_page_config(page_title="Disease Prediction System", page_icon="🏥", layout="wide")
+# 1. CRITICAL FIX: This MUST be the absolute first Streamlit command executed!
+# We use .get() to pull the state safely without executing conditional blocks first.
+st.set_page_config(
+    page_title="Disease Prediction System", 
+    page_icon="🏥", 
+    layout="wide",
+    initial_sidebar_state=st.session_state.get("sidebar_state", "expanded")
+)
 
-# --- Initialize Menu State Tracking ---
-if "show_sidebar" not in st.session_state:
-    st.session_state.show_sidebar = True
+# 2. Safely initialize session state tracking parameters below page config
+if "sidebar_state" not in st.session_state:
+    st.session_state.sidebar_state = "expanded"
 if "selected_page" not in st.session_state:
     st.session_state.selected_page = "Diabetes"
 
-# --- Custom Global UI CSS Styling ---
-# 1. Hides standard header decorations, clears entry prompts.
-# 2. CRITICAL: Deletes Streamlit's native '<<' arrow button so frontend states don't break.
+# 3. Custom Global UI CSS Styling (Hides header, footer, and removes input instructions)
 st.markdown(
     """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    [data-testid="InputInstructions"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"] {
-        display: none !important;
-    }
+    [data-testid="InputInstructions"] {display: none !important;}
+    [data-testid="collapsedControl"] {display: none !important;}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- Dynamic Sidebar Visibility Override ---
-if not st.session_state.show_sidebar:
-    st.markdown(
-        """
-        <style>
-        [data-testid="stSidebar"] {
-            display: none !important;
-        }
-        </style>
-        """, 
-        unsafe_allow_html=True
-    )
-
-# --- Persistent Navigation Control Button Layout ---
-# Allocating a specific layout weight keeps your toggle text sitting cleanly on a single line
-col_toggle, col_spacer = st.columns([1, 4])
+# 4. Single-line Layout Toggle Button
+col_toggle, _ = st.columns([1, 5])  # Gives the button plenty of room to stay on 1 line
 with col_toggle:
-    if st.session_state.show_sidebar:
-        if st.button("⬅️ Hide Sidebar", use_container_width=True):
-            st.session_state.show_sidebar = False
+    if st.session_state.sidebar_state == "expanded":
+        if st.button("⬅️ Hide Menu", use_container_width=True):
+            st.session_state.sidebar_state = "collapsed"
             st.rerun()
     else:
-        if st.button("➡️ Show Sidebar", use_container_width=True):
-            st.session_state.show_sidebar = True
+        if st.button("➡️ Show Menu", use_container_width=True):
+            st.session_state.sidebar_state = "expanded"
             st.rerun()
 
 # --- Load Models and Scalers ---
@@ -72,29 +58,26 @@ def load_assets():
 diabetes_model, heart_model, heart_scaler, parkinsons_model, parkinsons_scaler = load_assets()
 
 # --- Sidebar Navigation Framework ---
-if st.session_state.show_sidebar:
-    with st.sidebar:
-        st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
-        st.markdown("---")
-        
-        menu_options = ["Diabetes", "Heart Disease", "Parkinson's"]
-        current_index = menu_options.index(st.session_state.selected_page)
-        
-        page_selection = option_menu(
-            menu_title=None,
-            options=menu_options,
-            icons=["activity", "heart-pulse", "person-lines-fill"],
-            default_index=current_index,
-            styles={
-                "container": {"padding": "0!important", "background-color": "transparent"},
-                "icon": {"color": "gray", "font-size": "18px"}, 
-                "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-                "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
-            }
-        )
-        st.session_state.selected_page = page_selection
-
-page = st.session_state.selected_page
+with st.sidebar:
+    st.markdown("<h2 style='text-align: center;'>🏥 Med-Predict</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    menu_options = ["Diabetes", "Heart Disease", "Parkinson's"]
+    current_index = menu_options.index(st.session_state.selected_page)
+    
+    page_selection = option_menu(
+        menu_title=None,
+        options=menu_options,
+        icons=["activity", "heart-pulse", "person-lines-fill"],
+        default_index=current_index,
+        styles={
+            "container": {"padding": "0!important", "background-color": "transparent"},
+            "icon": {"color": "gray", "font-size": "18px"}, 
+            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
+            "nav-link-selected": {"background-color": "#ff4b4b", "color": "white", "icon-color": "white"},
+        }
+    )
+    st.session_state.selected_page = page_selection
 
 # ==========================================
 # 1. DIABETES PREDICTION
